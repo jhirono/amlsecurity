@@ -1,0 +1,17 @@
+{
+  "Name": "Data Scientist Super User",
+  "Description": "Administrator of the workspace that can do all actions in the workspace including creating compute and adding assigning roles to users",
+  "Actions": [
+    "Microsoft.MachineLearningServices/workspaces/*/read",
+    "Microsoft.MachineLearningServices/workspaces/*/action",
+    "Microsoft.MachineLearningServices/workspaces/*/write",
+    "Microsoft.MachineLearningServices/workspaces/*/delete",
+    "Microsoft.Authorization/*/write"
+  ],
+  "NotActions": [
+    "Microsoft.MachineLearningServices/workspaces/write"
+  ],
+  "AssignableScopes": [
+    "/subscriptions/8f338f6e-4fce-44ae-969c-fc7d8fda030e"
+]
+}

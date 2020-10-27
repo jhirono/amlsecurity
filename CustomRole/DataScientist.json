@@ -1,0 +1,24 @@
+{
+  "Name": "Data Scientist Custom",
+  "Description": "Can create experiments, submit runs, deploy models to test environments; Cannot create compute",
+  "Actions": [
+    "Microsoft.MachineLearningServices/workspaces/*/read",
+    "Microsoft.MachineLearningServices/workspaces/*/action",
+    "Microsoft.MachineLearningServices/workspaces/*/delete",
+    "Microsoft.MachineLearningServices/workspaces/*/write"
+  ],
+  "NotActions": [
+    "Microsoft.MachineLearningServices/workspaces/computes/write",
+    "Microsoft.MachineLearningServices/workspaces/write",
+    "Microsoft.MachineLearningServices/workspaces/computes/delete",
+    "Microsoft.MachineLearningServices/workspaces/delete",
+    "Microsoft.MachineLearningServices/workspaces/computes/listKeys/action",
+    "Microsoft.MachineLearningServices/workspaces/listKeys/action",
+    "Microsoft.MachineLearningServices/workspaces/services/aks/write",
+    "Microsoft.MachineLearningServices/workspaces/services/aks/delete",
+    "Microsoft.MachineLearningServices/workspaces/endpoints/pipelines/write"
+  ],
+  "AssignableScopes": [
+    "/subscriptions/8f338f6e-4fce-44ae-969c-fc7d8fda030e", "/subscriptions/d511f82f-71ba-49a4-8233-d7be8a3650f4/resourceGroups/WorkspaceVNetTesting" 
+]
+}

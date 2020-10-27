@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "eastus"
+        },
+        "workspace_name": {
+            "value": "ws1103"
+        },
+        "cluster_name": {
+            "value": "gpu-cluster"
+        },
+        "vnet_name": {
+            "value": "hub"
+        },
+        "subnet_name": {
+            "value": "training"
+        },
+        "admin_username": {
+            "value": "jhirono"
+        },
+        "admin_user_password": {
+            "value": "Jhirono##1111"
+        },
+        "vm_size_sku": {
+            "value": "STANDARD_NC6"
+        },
+        "min_node_count": {
+            "value": 0
+        },
+        "max_node_count": {
+            "value": 4
+        }
+    }
+}
