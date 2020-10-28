@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspaceName": {
+            "value": "ws1103"
+        },
+        "computeName": {
+            "value": "ws1103ci2"
+        },
+        "vmSize": {
+            "value": "Standard_DS3_v2"
+        },
+        "objectId": {
+            "value": "1a61dc23-9e60-450e-9b17-d7ded8b865ba"
+        },
+        "vnetResourceGroupName": {
+            "value": "ws1103"
+        },
+        "vnetName": {
+            "value": "hub"
+        },
+        "subnetName": {
+            "value": "training"
+        }
+    }
+}
