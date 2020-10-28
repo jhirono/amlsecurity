@@ -37,7 +37,7 @@ Architecture is like below.
 
 ### Resource Group
 
-```azurecli
+```azurecli-interactive
 az group create -n ws1103 -l eastus
 ```
 
@@ -332,6 +332,13 @@ TBU
 
 >**WARNING** Internal load balancer does not work with an AKS cluster that uses kubenet. If you want to use an internal load balancer and a private AKS cluster at the same time, configure your private AKS cluster with Azure Container Networking Interface (CNI).
 
+Final architecture looks below.
+![aks](./Pic/6aks.png)
+
+Final resource group looks below.
+
+![rg](./Pic/6finalrg.png)
+
 ## 7. Test machine learning job on secure AML platform
 
 Now secure AML is ready to use. Let's open Integrated Notebook or Jupyter on Compute Instance and run the end-to-end data science job. In this case I use [this example notebook](https://github.com/Azure/MachineLearningNotebooks/tree/master/tutorials/image-classification-mnist-data).
@@ -346,12 +353,23 @@ ws = Workspace.from_config()
 ws.update(image_build_compute = 'mycomputecluster')
 ```
 
-## 8. Additional Configurations
+## 8. Additional Configurations & Considerations
 
 ### Custom DNS
 
+If you use customer DNS, you need additional configurations to resolve workspace FQDNs. See [this doc]https://docs.microsoft.com/en-us/azure/machine-learning/how-to-custom-dns?tabs=azure-cli)
+
 ### Limit Outbound
+
+You can limit outbound connectivity but you have two resources which require outbound access: Compute Cluster/Compute Instance and AKS.
+
+* Compute Cluster/Instance need outbound traffic explained in [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-secure-training-vnet#limiting-outbound-from-vnet). 
+* AKS needs outbound traffic explained in [this doc](https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic).
 
 ### Firewall
 
+See [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-access-azureml-behind-firewall).
+
 ### Managed Identity
+
+You might have concern that AML requires admin key access to ACR and key access to Storage. We started preview of managed identity to get rid of two keys. See [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-use-managed-identities?tabs=python).
