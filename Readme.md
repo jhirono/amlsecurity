@@ -188,7 +188,7 @@ I recommend using Bation to access VM. Look [this doc](https://docs.microsoft.co
 Please also create NSG for Bastion subnet. Data Science VM is inside your VNet and you can access your private link enabled workspace. You have private DNS zones on Azure so you do not need hostfile update. If you do not see error, your configuration is succeeded.
 
 Architecture looks below.
-![AccessToPLWorkspace](./Pic/2AccessToPLWorkspace.png)
+![AccessToPLWorkspace](./Pic/2AccessToPLWorkspace.PNG)
 
 ## 3. Enable ML Studio UX features
 
@@ -196,7 +196,7 @@ Services on ml.azure.com require the access right to your storage to access data
 
 Confirm data profiling works well with creating your dataset with your local CSV file. Please use [this file](https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset) for testing. If you see below screen, configuration is correct.
 
-![data profiling](./Pic/3DataProfiling.png)
+![data profiling](./Pic/3DataProfiling.PNG)
 
 > **WARNING** If you encounter the error when you upload dataset to storage, you do not have the access to storage. If you encounter the error to do data profiling, managed identity configuration of storage has issue.
 
