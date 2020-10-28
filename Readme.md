@@ -306,7 +306,8 @@ az deployment group create -n cionbehalf -g ws1103 -f CIPoBoTemplate.json -p CIP
 Please confirm you cannot access Jupyter/RStudio on newly created compute instance. It can be accessed by data scientist.
 
 Now you have set up training resources. Architecture looks below.
-![computearchitecture](./Pic/4compute.png)
+
+![computearchitecture](./Pic/4Compute.png)
 
 > **BEFORE YOU GO** Some of you noticed that you cannot find Compute Instance and Compute Cluster in your resource group. They are managed by Microsoft but injected in your resource group and act like they exist in your VNet.
 
@@ -318,19 +319,31 @@ Now you have set up training resources. Architecture looks below.
 | Private AKS Cluster |    Attach is supported. Please create private AKS cluster at first and attach to AML workspace.   |
 | Load Balancer | Both public load balancer (default) and private load balancer are supported. |
 
+> **WARNING** If you use public load balancer, you need to allow inbound access to Scoring IP on NSG. Read [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-secure-inferencing-vnet?tabs=python#azure-kubernetes-service)
+
 ### AKS behind VNet with internal load balancer
+
+Look [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-secure-inferencing-vnet?tabs=python).
 
 ```azurecli
 az ml computetarget create aks -n ws1103aks1 --load-balancer-type InternalLoadBalancer --load-balancer-subnet scoring -l eastus -g ws1103 --vnet-name hub --vnet-resourcegroup-name ws1103 --subnet-name scoring --workspace-name ws1103 --cluster-purpose DevTest --service-cidr 10.0.0.0/16 --dns-service-ip 10.0.0.10 --docker-bridge-cidr 172.17.0.1/16
 ```
 
-Also look [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-secure-inferencing-vnet?tabs=python).
-
 ### Private AKS Cluster with internal load balancer
 
+Create Private AKS Cluster. [doc](https://docs.microsoft.com/en-us/azure/aks/private-clusters)
+
 ```azurecli
-TBU
+az aks create -g ws1103 -n ws1103privateaks --load-balancer-sku standard --enable-private-cluster --network-plugin azure --vnet-subnet-id /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourceGroups/ws1103/providers/Microsoft.Network/virtualNetworks/hub/subnets/scoring --docker-bridge-address 172.17.0.1/16 --dns-service-ip 10.2.0.10 --service-cidr 10.2.0.0/24
 ```
+
+Attach to workspace [doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-kubernetes?tabs=python)
+
+```azurecli
+az ml computetarget attach aks -n privateaks -i /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourcegroups/ws1103/providers/Microsoft.ContainerService/managedClusters/ws1103privateaks -g ws1103 -w ws1103
+```
+
+For internal load balancer creation, at this moment, you need to follow [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-secure-inferencing-vnet?tabs=python#enable-private-load-balancer)
 
 >**WARNING** Internal load balancer does not work with an AKS cluster that uses kubenet. If you want to use an internal load balancer and a private AKS cluster at the same time, configure your private AKS cluster with Azure Container Networking Interface (CNI).
 
@@ -359,7 +372,7 @@ ws.update(image_build_compute = 'mycomputecluster')
 
 ### Custom DNS
 
-If you use customer DNS, you need additional configurations to resolve workspace FQDNs. See [this doc]https://docs.microsoft.com/en-us/azure/machine-learning/how-to-custom-dns?tabs=azure-cli)
+If you use customer DNS, you need additional configurations to resolve workspace FQDNs. See [this doc](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-custom-dns?tabs=azure-cli)
 
 ### Limit Outbound
 
