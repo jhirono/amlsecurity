@@ -174,7 +174,7 @@ You also need to update your hostfile to resolve workspace FQDNs with private IP
 10.150.0.13ws1103acr.eastus.data.azurecr.io
 10.150.0.14 ws1103acr.azurecr.io.
 10.150.0.15 ws1103sa.blob.core.windows.net
-10.150.0.16 ws1103sa.table.core.windows.net
+10.150.0.7 ws1103sa.file.core.windows.net
 ```
 
 Let's try to establish VPN connection to hub vnet and access ml.azure.com from your browser. If you do not see error, your configuration looks good.
@@ -396,6 +396,13 @@ You might have concern that AML requires admin key access to ACR and key access 
 We support CMK and Private Link related policy for AML. Policies for compute are on roadmap. See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-integrate-azure-policy).
 
 ## 9. Customer Feedback
+
+### Able to access private link enabled workspace from outside workspace VNet
+
+AML has two layers. Control Plane and Data Plane. User can access to Control Plane from outside VNet. Even from outside VNet, you can see ml.azure.com and Compute tab. However, you cannot see all remaining data such as experiments data, model data, dataset etc.
+
+* Control Plane: Workspace CRUD operations and Compute tab.
+* Data Plane: All services other than Control Plane.
 
 ### Automation
 
