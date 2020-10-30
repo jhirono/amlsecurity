@@ -2,17 +2,17 @@
 
 You can learn how to create secure machine learning platform using Azure and Azure Machine Learning. Sorry!! For now this document has only CLI commands and your contribution to add powershell commands is appreciated.
 
-1. [Requirements](https://github.com/jhirono/amlsecurity#0-requirements)
-1. [What you will create](https://github.com/jhirono/amlsecurity#0-what-you-will-create)
-1. [Provision Secure workspace](https://github.com/jhirono/amlsecurity#1-provision-secure-workspace)
-1. [Establish the access to private link enabled workspace](https://github.com/jhirono/amlsecurity#2-establish-the-access-to-private-link-enabled-workspace)
-1. [Enable ML Studio UX features](https://github.com/jhirono/amlsecurity#3-enable-ml-studio-ux-features)
-1. [Manage Users and Roles](https://github.com/jhirono/amlsecurity#4-manage-users-and-roles)
-1. [Provision Secure training env (Compute Cluster, Compute Instance)](https://github.com/jhirono/amlsecurity#5-provision-secure-training-env-compute-cluster-compute-instance)
-1. [Provision Secure scoring env (AKS)](https://github.com/jhirono/amlsecurity#6-provision-secure-scoring-env-aks)
-1. [Test machine learning job on secure AML platform](https://github.com/jhirono/amlsecurity#7-test-machine-learning-job-on-secure-aml-platform)
-1. [Additional Configurations & Considerations](https://github.com/jhirono/amlsecurity#8-additional-configurations--considerations)
-1. [Customer Feedback](https://github.com/jhirono/amlsecurity#9-customer-feedback)
+1. [Requirements](https://github.com/jhirono/amlsecurity#1-requirements)
+1. [What you will create](https://github.com/jhirono/amlsecurity#2-what-you-will-create)
+1. [Provision Secure workspace](https://github.com/jhirono/amlsecurity#3-provision-secure-workspace)
+1. [Establish the access to private link enabled workspace](https://github.com/jhirono/amlsecurity#4-establish-the-access-to-private-link-enabled-workspace)
+1. [Enable ML Studio UX features](https://github.com/jhirono/amlsecurity#5-enable-ml-studio-ux-features)
+1. [Manage Users and Roles](https://github.com/jhirono/amlsecurity#6-manage-users-and-roles)
+1. [Provision Secure training env (Compute Cluster, Compute Instance)](https://github.com/jhirono/amlsecurity#7-provision-secure-training-env-compute-cluster-compute-instance)
+1. [Provision Secure scoring env (AKS)](https://github.com/jhirono/amlsecurity#8-provision-secure-scoring-env-aks)
+1. [Test machine learning job on secure AML platform](https://github.com/jhirono/amlsecurity#9-test-machine-learning-job-on-secure-aml-platform)
+1. [Additional Configurations & Considerations](https://github.com/jhirono/amlsecurity#10-additional-configurations--considerations)
+1. [Customer Feedback](https://github.com/jhirono/amlsecurity#11-customer-feedback)
 
 ## 1. Requirements
 
