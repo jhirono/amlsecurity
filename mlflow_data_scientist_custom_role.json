@@ -1,0 +1,30 @@
+{
+      "Name": "MLFlow Data Scientist Custom",
+      "IsCustom": true,
+      "Description": "Can perform azureml mlflow integrated functionalities that includes mlflow tracking, projects, model registry",
+      "Actions": [
+          "Microsoft.MachineLearningServices/workspaces/experiments/read",
+          "Microsoft.MachineLearningServices/workspaces/experiments/write",
+          "Microsoft.MachineLearningServices/workspaces/experiments/delete",
+          "Microsoft.MachineLearningServices/workspaces/experiments/runs/read",
+          "Microsoft.MachineLearningServices/workspaces/experiments/runs/write",
+          "Microsoft.MachineLearningServices/workspaces/models/read",
+          "Microsoft.MachineLearningServices/workspaces/models/write",
+          "Microsoft.MachineLearningServices/workspaces/models/delete"
+      ],
+      "NotActions": [
+          "Microsoft.MachineLearningServices/workspaces/delete",
+          "Microsoft.MachineLearningServices/workspaces/write",
+          "Microsoft.MachineLearningServices/workspaces/computes/*/write",
+          "Microsoft.MachineLearningServices/workspaces/computes/*/delete", 
+          "Microsoft.Authorization/*",
+          "Microsoft.MachineLearningServices/workspaces/computes/listKeys/action",
+          "Microsoft.MachineLearningServices/workspaces/listKeys/action",
+          "Microsoft.MachineLearningServices/workspaces/services/aks/write",
+          "Microsoft.MachineLearningServices/workspaces/services/aks/delete",
+          "Microsoft.MachineLearningServices/workspaces/endpoints/pipelines/write"
+      ],
+   "AssignableScopes": [
+          "/subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f"
+      ]
+  }

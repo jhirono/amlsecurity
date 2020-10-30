@@ -1,0 +1,35 @@
+{
+    "Name": "MLOps Custom",
+    "IsCustom": true,
+    "Description": "Can run pipelines against a published pipeline endpoint",
+    "Actions": [
+        "Microsoft.MachineLearningServices/workspaces/read",
+        "Microsoft.MachineLearningServices/workspaces/endpoints/pipelines/read",
+        "Microsoft.MachineLearningServices/workspaces/metadata/artifacts/read",
+        "Microsoft.MachineLearningServices/workspaces/metadata/snapshots/read",
+        "Microsoft.MachineLearningServices/workspaces/environments/read",    
+        "Microsoft.MachineLearningServices/workspaces/metadata/secrets/read",
+        "Microsoft.MachineLearningServices/workspaces/modules/read",
+        "Microsoft.MachineLearningServices/workspaces/experiments/runs/read",
+        "Microsoft.MachineLearningServices/workspaces/datasets/registered/read",
+        "Microsoft.MachineLearningServices/workspaces/datastores/read",
+        "Microsoft.MachineLearningServices/workspaces/environments/write",
+        "Microsoft.MachineLearningServices/workspaces/experiments/runs/write",
+        "Microsoft.MachineLearningServices/workspaces/metadata/artifacts/write",
+        "Microsoft.MachineLearningServices/workspaces/metadata/snapshots/write",
+        "Microsoft.MachineLearningServices/workspaces/environments/build/action",
+        "Microsoft.MachineLearningServices/workspaces/experiments/runs/submit/action"
+    ],
+    "NotActions": [
+        "Microsoft.MachineLearningServices/workspaces/computes/write",
+        "Microsoft.MachineLearningServices/workspaces/write",
+        "Microsoft.MachineLearningServices/workspaces/computes/delete",
+        "Microsoft.MachineLearningServices/workspaces/delete",
+        "Microsoft.MachineLearningServices/workspaces/computes/listKeys/action",
+        "Microsoft.MachineLearningServices/workspaces/listKeys/action",
+        "Microsoft.Authorization/*"
+    ],
+    "AssignableScopes": [
+        "/subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f"
+    ]
+}

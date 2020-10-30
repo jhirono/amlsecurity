@@ -1,0 +1,16 @@
+{
+    "Name": "Labeler Custom",
+    "IsCustom": true,
+    "Description": "Can label data for Labeling",
+    "Actions": [
+        "Microsoft.MachineLearningServices/workspaces/read",
+        "Microsoft.MachineLearningServices/workspaces/labeling/projects/read",
+        "Microsoft.MachineLearningServices/workspaces/labeling/labels/write"
+    ],
+    "NotActions": [
+        "Microsoft.MachineLearningServices/workspaces/labeling/projects/summary/read"
+    ],
+    "AssignableScopes": [
+        "/subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f"
+    ]
+}

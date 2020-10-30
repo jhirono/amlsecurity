@@ -19,6 +19,6 @@
     "Microsoft.MachineLearningServices/workspaces/endpoints/pipelines/write"
   ],
   "AssignableScopes": [
-    "/subscriptions/8f338f6e-4fce-44ae-969c-fc7d8fda030e", "/subscriptions/d511f82f-71ba-49a4-8233-d7be8a3650f4/resourceGroups/WorkspaceVNetTesting" 
+    "/subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f", "/subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/ws1103/ws1103" 
 ]
 }

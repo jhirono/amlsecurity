@@ -2,7 +2,19 @@
 
 You can learn how to create secure machine learning platform using Azure and Azure Machine Learning. Sorry!! For now this document has only CLI commands and your contribution to add powershell commands is appreciated.
 
-## 0. Requirements
+1. [Requirements](https://github.com/jhirono/amlsecurity#0-requirements)
+1. [What you will create](https://github.com/jhirono/amlsecurity#0-what-you-will-create)
+1. [Provision Secure workspace](https://github.com/jhirono/amlsecurity#1-provision-secure-workspace)
+1. [Establish the access to private link enabled workspace](https://github.com/jhirono/amlsecurity#2-establish-the-access-to-private-link-enabled-workspace)
+1. [Enable ML Studio UX features](https://github.com/jhirono/amlsecurity#3-enable-ml-studio-ux-features)
+1. [Manage Users and Roles](https://github.com/jhirono/amlsecurity#4-manage-users-and-roles)
+1. [Provision Secure training env (Compute Cluster, Compute Instance)](https://github.com/jhirono/amlsecurity#5-provision-secure-training-env-compute-cluster-compute-instance)
+1. [Provision Secure scoring env (AKS)](https://github.com/jhirono/amlsecurity#6-provision-secure-scoring-env-aks)
+1. [Test machine learning job on secure AML platform](https://github.com/jhirono/amlsecurity#7-test-machine-learning-job-on-secure-aml-platform)
+1. [Additional Configurations & Considerations](https://github.com/jhirono/amlsecurity#8-additional-configurations--considerations)
+1. [Customer Feedback](https://github.com/jhirono/amlsecurity#9-customer-feedback)
+
+## 1. Requirements
 
 * Azure Subscription
 * Submit a support request for private endpoint allowance. Details in [here](https://docs.microsoft.com/azure/machine-learning/how-to-manage-quotas#private-endpoint-and-private-dns-quota-increases) and we use three scenarios: private link and Customer managed key enabled workspace, ACR behind VNet and Private AKS Cluster.
@@ -11,7 +23,7 @@ You can learn how to create secure machine learning platform using Azure and Azu
 * Latest version of Azure cli-ml: az extension update -n azure-cli-ml
 * If you are not familiar with AML Security, please read this [doc](https://docs.microsoft.com/azure/machine-learning/how-to-network-security-overview).
 
-## 0. What you will create
+## 2. What you will create
 
 ![aks](./Pic/6aks.png)
 
@@ -133,7 +145,7 @@ Note that private endpoint is linked with VNet through private DNS zones. You ne
 I show architecture again and please confirm your settings.
 ![Architecutre](./Pic/1ProvisionSecureWorkspace.png)
 
-## 2. Establish the access to private link enabled workspace
+## 4. Establish the access to private link enabled workspace
 
 Your private link enabled workspace can be accessed only through private endpoint created for your workspace over private IP of your VNet. In order to access your workspace, I explain two ways.
 
@@ -192,7 +204,7 @@ Please also create NSG for Bastion subnet. Data Science VM is inside your VNet a
 Architecture looks below.
 ![AccessToPLWorkspace](./Pic/2AccessToPLWorkspace.PNG)
 
-## 3. Enable ML Studio UX features
+## 5. Enable ML Studio UX features
 
 Services on ml.azure.com require the access right to your storage to access data. AML uses workspace managed identity for that. You need to access ml.azure.com, go to datastore and update default storage setting of "Click the Use workspace managed identity for data preview and profiling in Azure Machine Learning studio". See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-enable-studio-virtual-network).
 
@@ -204,7 +216,7 @@ Confirm data profiling works well with creating your dataset with your local CSV
 
 You can also create dataset referencing data in Azure Blob, Azure File Share, Azure Data Lake, Azure Data Lake Gen 2, and Azure SQL DB. See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-access-data). We recommend Azure Data Lake Gen 2 for enterprises with requirement for file or directory level access control. Learn [access control lists (ACLs) in Azure Data Lake Gen2](https://docs.microsoft.com/azure/storage/blobs/data-lake-storage-access-control).
 
-## 4. Manage Users and Roles
+## 6. Manage Users and Roles
 
 Role Based Access Control is essential for security. In this section you will create followings.
 
@@ -216,6 +228,8 @@ You can find example custom roles in [here](./CustomRole/).
 * IT Admin: Can do anything.
 * Data Scientist Super User: Administrator of the workspace that can do all actions in the workspace including creating compute and adding assigning roles to users
 * Data Scientist: Can create experiments, submit runs, deploy models to test environments; Cannot create compute
+
+> **WARNING** Do not forget to update subscription ID in custome role json files.
 
 Custom Role Creation
 ```azurecli
@@ -229,7 +243,7 @@ az ml workspace share -w my_workspace -g my_resource_group --role "Data Scientis
 
 > **WARNING** I use my gmail account as an example but "az ml workspace share" command does not work for federated account by Azure Active Directory B2B. Please use Azure UI portal instead of command.
 
-## 5. Provision Secure training env (Compute Cluster, Compute Instance)
+## 7. Provision Secure training env (Compute Cluster, Compute Instance)
 
 ### Current Service Availability as of Oct 2020
 
@@ -311,7 +325,7 @@ Confirm you cannot access Jupyter/RStudio on newly created compute instance. It 
 
 > **BEFORE YOU GO** Some of you noticed that you cannot find Compute Instance and Compute Cluster in your resource group. They are managed by Microsoft but injected in your resource group and act like they exist in your VNet.
 
-## 6. Provision Secure scoring env (AKS)
+## 8. Provision Secure scoring env (AKS)
 
 | Service   |      Status      |
 |----------|-------------|
@@ -325,13 +339,47 @@ Confirm you cannot access Jupyter/RStudio on newly created compute instance. It 
 
 Look [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet).
 
+Create an AKS behind VNet with Standard Load Balancer
+
 ```azurecli
-az ml computetarget create aks -n ws1103aks1 --load-balancer-type InternalLoadBalancer --load-balancer-subnet scoring -l eastus -g ws1103 --vnet-name hub --vnet-resourcegroup-name ws1103 --subnet-name scoring --workspace-name ws1103 --cluster-purpose DevTest --service-cidr 10.0.0.0/16 --dns-service-ip 10.0.0.10 --docker-bridge-cidr 172.17.0.1/16
+az ml computetarget create aks -n ws1103aks --load-balancer-type PublicIp -l eastus -g ws1103 --vnet-name hub --vnet-resourcegroup-name ws1103 --subnet-name scoring --workspace-name ws1103 --cluster-purpose FastProd --service-cidr 10.0.0.0/16 --dns-service-ip 10.0.0.10 --docker-bridge-cidr 172.17.0.1/16
+```
+
+Grant Network Contributor access to AKS Service Principle. Look up required parameters.
+
+```azurecli
+az aks show -n ws1103aks4d629721d5b -g ws1103 --query servicePrincipalProfile.clientId -o tsv
+az group show -n ws1103 --query id -o tsv
+```
+
+```azurecli
+az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourceGroups/ws1103
+```
+
+Create internal load balancer on Juypter Notebook. Currently azure cli-ml does not support update command for Compute. See this [doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#enable-private-load-balancer). Below is the python SDK example.
+
+```python
+import azureml.core
+from azureml.core.compute.aks import AksUpdateConfiguration
+from azureml.core.compute import AksCompute
+
+# ws = workspace object. Creation not shown in this snippet
+aks_target = AksCompute(ws,"ws1103aks")
+
+# Change to the name of the subnet that contains AKS
+subnet_name = "scoring"
+# Update AKS configuration to use an internal load balancer
+update_config = AksUpdateConfiguration(None, "InternalLoadBalancer", subnet_name)
+aks_target.update(update_config)
+# Wait for the operation to complete
+aks_target.wait_for_completion(show_output = True)
 ```
 
 ### Private AKS Cluster with internal load balancer
 
 Create Private AKS Cluster. [doc](https://docs.microsoft.com/azure/aks/private-clusters)
+
+>**WARNING** Internal load balancer does not work with an AKS cluster that uses kubenet. If you want to use an internal load balancer and a private AKS cluster at the same time, configure your private AKS cluster with Azure Container Networking Interface (CNI).
 
 ```azurecli
 az aks create -g ws1103 -n ws1103privateaks --load-balancer-sku standard --enable-private-cluster --network-plugin azure --vnet-subnet-id /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourceGroups/ws1103/providers/Microsoft.Network/virtualNetworks/hub/subnets/scoring --docker-bridge-address 172.17.0.1/16 --dns-service-ip 10.2.0.10 --service-cidr 10.2.0.0/24
@@ -343,9 +391,24 @@ Attach to workspace [doc](https://docs.microsoft.com/azure/machine-learning/how-
 az ml computetarget attach aks -n privateaks -i /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourcegroups/ws1103/providers/Microsoft.ContainerService/managedClusters/ws1103privateaks -g ws1103 -w ws1103
 ```
 
-For internal load balancer creation, you need to follow [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#enable-private-load-balancer)
+Create internal load balancer on Juypter Notebook. Currently azure cli-ml does not support update command for Compute. See this [doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#enable-private-load-balancer). Below is the python SDK example.
 
->**WARNING** Internal load balancer does not work with an AKS cluster that uses kubenet. If you want to use an internal load balancer and a private AKS cluster at the same time, configure your private AKS cluster with Azure Container Networking Interface (CNI).
+```python
+import azureml.core
+from azureml.core.compute.aks import AksUpdateConfiguration
+from azureml.core.compute import AksCompute
+
+# ws = workspace object. Creation not shown in this snippet
+aks_target = AksCompute(ws,"ws1103aks")
+
+# Change to the name of the subnet that contains AKS
+subnet_name = "scoring"
+# Update AKS configuration to use an internal load balancer
+update_config = AksUpdateConfiguration(None, "InternalLoadBalancer", subnet_name)
+aks_target.update(update_config)
+# Wait for the operation to complete
+aks_target.wait_for_completion(show_output = True)
+```
 
 Final architecture looks below.
 ![aks](./Pic/6aks.png)
@@ -368,7 +431,7 @@ ws = Workspace.from_config()
 ws.update(image_build_compute = 'mycomputecluster')
 ```
 
-## 8. Additional Configurations & Considerations
+## 10. Additional Configurations & Considerations
 
 ### Custom DNS
 
@@ -395,7 +458,7 @@ You might have concern that AML requires admin key access to ACR and key access 
 
 We support CMK and Private Link related policy for AML. Policies for compute are on roadmap. See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-integrate-azure-policy).
 
-## 9. Customer Feedback
+## 11. Customer Feedback
 
 ### Able to access private link enabled workspace from outside workspace VNet
 

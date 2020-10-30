@@ -1,0 +1,51 @@
+{
+    "Name": "Data Scientist Restricted Custom",
+    "IsCustom": true,
+    "Description": "Can run experiment but can't create or delete compute or deploy production endpoints",
+    "Actions": [
+        "Microsoft.MachineLearningServices/workspaces/*/read",
+        "Microsoft.MachineLearningServices/workspaces/computes/start/action",
+        "Microsoft.MachineLearningServices/workspaces/computes/stop/action",
+        "Microsoft.MachineLearningServices/workspaces/computes/restart/action",
+        "Microsoft.MachineLearningServices/workspaces/computes/applicationaccess/action",
+        "Microsoft.MachineLearningServices/workspaces/notebooks/storage/read",
+        "Microsoft.MachineLearningServices/workspaces/notebooks/storage/write",
+        "Microsoft.MachineLearningServices/workspaces/notebooks/storage/delete",
+        "Microsoft.MachineLearningServices/workspaces/notebooks/samples/read",
+        "Microsoft.MachineLearningServices/workspaces/experiments/runs/write",
+        "Microsoft.MachineLearningServices/workspaces/experiments/write",
+        "Microsoft.MachineLearningServices/workspaces/experiments/runs/submit/action",
+        "Microsoft.MachineLearningServices/workspaces/pipelinedrafts/write",
+        "Microsoft.MachineLearningServices/workspaces/metadata/snapshots/write",
+        "Microsoft.MachineLearningServices/workspaces/metadata/artifacts/write",
+        "Microsoft.MachineLearningServices/workspaces/environments/write",
+        "Microsoft.MachineLearningServices/workspaces/models/write",
+        "Microsoft.MachineLearningServices/workspaces/modules/write",
+        "Microsoft.MachineLearningServices/workspaces/datasets/registered/write", 
+        "Microsoft.MachineLearningServices/workspaces/datasets/registered/delete",
+        "Microsoft.MachineLearningServices/workspaces/datasets/unregistered/write",
+        "Microsoft.MachineLearningServices/workspaces/datasets/unregistered/delete",
+        "Microsoft.MachineLearningServices/workspaces/computes/listNodes/action",
+        "Microsoft.MachineLearningServices/workspaces/environments/build/action"
+    ],
+    "NotActions": [
+        "Microsoft.MachineLearningServices/workspaces/computes/write",
+        "Microsoft.MachineLearningServices/workspaces/write",
+        "Microsoft.MachineLearningServices/workspaces/computes/delete",
+        "Microsoft.MachineLearningServices/workspaces/delete",
+        "Microsoft.MachineLearningServices/workspaces/computes/listKeys/action",
+        "Microsoft.MachineLearningServices/workspaces/listKeys/action",
+        "Microsoft.Authorization/*",
+        "Microsoft.MachineLearningServices/workspaces/datasets/registered/profile/read",
+        "Microsoft.MachineLearningServices/workspaces/datasets/registered/preview/read",
+        "Microsoft.MachineLearningServices/workspaces/datasets/unregistered/profile/read",
+        "Microsoft.MachineLearningServices/workspaces/datasets/unregistered/preview/read",
+        "Microsoft.MachineLearningServices/workspaces/datasets/registered/schema/read",    
+        "Microsoft.MachineLearningServices/workspaces/datasets/unregistered/schema/read",
+        "Microsoft.MachineLearningServices/workspaces/datastores/write",
+        "Microsoft.MachineLearningServices/workspaces/datastores/delete"
+    ],
+    "AssignableScopes": [
+        "/subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f"
+    ]
+}
