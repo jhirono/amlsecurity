@@ -40,7 +40,7 @@ You will create followings.
 
 * Resource Group
 * VNet and Subnets
-* Private Link enabled workspace
+* Private Link and Customer Managed Key enabled workspace
 * Storage with private endpoint
 * ACR with private endpoint
 * KV with private endpoint
@@ -52,7 +52,15 @@ Architecture is like below.
 ### Create Resource Group
 
 ```azurecli-interactive
+az login
+az account set -s <your subscription id>
 az group create -n ws1103 -l eastus
+```
+
+Resource group name will be used many times, so let's have it as constant.
+
+```azurecli
+rg=ws1103
 ```
 
 ### Create VNet and Subnets
@@ -65,18 +73,20 @@ You put workspace and training compute resources such as compute cluster, comput
 * Network Security Group for both subnets
 
 Create VNet and Subnets
+
 ```azurecli
-az network VNet create -g ws1103 -n hub --address-prefix 10.150.0.0/16 --subnet-name training --subnet-prefix 10.150.0.0/24
-az network VNet subnet update -g ws1103 --VNet-name hub -n training --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
-az network VNet subnet create -g ws1103 --VNet-name hub -n scoring --address-prefixes 10.150.1.0/24
-az network VNet subnet update -g ws1103 --VNet-name hub -n scoring --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
+az network VNet create -g $rg -n hub --address-prefix 10.150.0.0/16 --subnet-name training --subnet-prefix 10.150.0.0/24
+az network VNet subnet update -g $rg --VNet-name hub -n training --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
+az network VNet subnet create -g $rg --VNet-name hub -n scoring --address-prefixes 10.150.1.0/24
+az network VNet subnet update -g $rg --VNet-name hub -n scoring --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
 ```
 
 Create NSG and attach to subnets. NSG rule will be updated later.
+
 ```aazurecli
-az network nsg create -n ws1103nsg -g ws1103 
-az network vnet subnet update -g ws1103 --vnet-name hub -n training --network-security-group ws1103nsg
-az network vnet subnet update -g ws1103 --vnet-name hub -n scoring --network-security-group ws1103nsg
+az network nsg create -n ws1103nsg -g $rg
+az network vnet subnet update -g $rg --vnet-name hub -n training --network-security-group ws1103nsg
+az network vnet subnet update -g $rg --vnet-name hub -n scoring --network-security-group ws1103nsg
 ```
 
 ### Create KeyVault for encryption
@@ -88,17 +98,19 @@ You will create workspace encrypted by your key and you need keyvault and key fo
 * KeyVault private endpoint for hub VNet
 
 KeyVault and Key Creation
+
 ```azurecli
-az keyvault create -l eastus -n ws1103kv -g ws1103
+az keyvault create -l eastus -n ws1103kv -g $rg
 az keyvault key create -n ws1103key --vault-name ws1103kv
 ```
 
 > **BEFORE YOU CONTINUE** I recommend taking note of below information for workspace encryption parameters. Note that below is my example and you will have different ones.
 
-* Resource ID: /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourceGroups/ws1103/providers/Microsoft.KeyVault/vaults/ws1103kv
+* Resource ID: /subscriptions/<your subscription id>/resourceGroups/ws1103/providers/Microsoft.KeyVault/vaults/ws1103kv
 * KID: https://ws1103kv.vault.azure.net/keys/ws1103key/5cb33f32dbbb468eb71c6ee0de1b5e84
 
 Create Private Endpoint for hub VNet
+
 * Please look [this doc](https://docs.microsoft.com/azure/key-vault/general/private-link-service).
 
 ### Provision Private Link and Customer Managed Key Enabled Workspace
@@ -115,6 +127,10 @@ In a newly created resource group, you will create
 * Azure Search
 * VNet
 
+> **BEFORE YOU GO** AML encrypts workpace using Microsoft Managed Key by default. CMK workspace is for the customer who really want to encrypt workspace with their key. If customer is ok with the encryption using Microsoft Managed Key, please provision normal workspace.
+
+> **WARNING** Cosmos DB RU is set as 8,000 and can be increased based on AML usage. RU 8000 means around $500 per month cost.
+
 I recommend using [this quick start template](https://github.com/Azure/azure-quickstart-templates/tree/master/201-machine-learning-advanced) and read [this how-to-use-ARM-template doc](https://docs.microsoft.com/azure/machine-learning/how-to-create-workspace-template). You can also create private link/CMK workspace from portal.azure.com. You can find my parameter file in [here](./Template/azuredeploy.parameters.json) as an example. Below are key parameters.
 
 * StorageAccount/KeyVault/ACR/VNet/Subnet Option: new or existing to use your existing resources
@@ -128,7 +144,13 @@ I recommend using [this quick start template](https://github.com/Azure/azure-qui
 Please note that you can create private endpoint for existing workspace from portal.azure.com or ARM template.
 
 ```azurecli
-az deployment group create -n plcmkworkspace1103 -g ws1103 -f azuredeploy.json -p azuredeploy.parameters.json
+az deployment group create -n plcmkworkspace1103 -g $rg -f azuredeploy.json -p azuredeploy.parameters.json
+```
+
+Workspace name will be used many times, so let's have it as constant.
+
+```azurecli
+ws=ws1103
 ```
 
 ### Create Private Endpoints for Storage, KeyVault, ACR
@@ -155,6 +177,8 @@ Your private link enabled workspace can be accessed only through private endpoin
 1. Establish Point to Site VPN connection to your workspace hub VNet and update hostfile
 1. Create VM in your workspace hub VNet as a jumpbox VM
 
+> **BEFORE YOU GO** I recommend using VPN connection because in the case of jump box VM, you will have three redundant resources; your client, jumpbox and compute instance. In the case of VPN, you just have your client and compute instance. If customer's security standard allows, I also recommend using your client as model development env and compute cluster as scalable training env.
+
 ### Establish point to site VPN connection (advanced)
 
 You will create followings. Please see [this step by step guide](https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal).
@@ -169,7 +193,7 @@ You also need to update your hostfile to resolve workspace FQDNs with private IP
 * Open hostfile (Win+R and %SystemRoot%\system32\drivers\etc\hosts)
 * Below is my examples
 
-```
+```txt
 ## For workspace FQDNs
 10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.api.azureml.ms
 10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.studio.workspace.eastus.api.azureml.ms
@@ -191,13 +215,13 @@ You also need to update your hostfile to resolve workspace FQDNs with private IP
 
 Let's try to establish VPN connection to hub vnet and access ml.azure.com from your browser. If you do not see error, your configuration looks good.
 
-> **BEFORE YOU CONTINUE** Enterprise corporation has custom DNS service. In that case, they need to configure their custom DNS to resolve FQDNs with Private IP.
+> **BEFORE YOU CONTINUE** Enterprise corporation has custom DNS service. In that case, they need to configure their custom DNS to resolve FQDNs with Private IP like we did in host file.
 
 ### Create VM in your workspace hub VNet (easy)
 
 You create Data Science Virtual Machine in training subnet. Look [this doc](https://docs.microsoft.com/azure/machine-learning/data-science-virtual-machine/provision-vm).
 
-I recommend using Bation to access VM. Look [this doc](https://docs.microsoft.com/azure/bastion/create-host-cli)
+I recommend using Bastion to access VM. Look [this doc](https://docs.microsoft.com/azure/bastion/create-host-cli)
 
 Please also create NSG for Bastion subnet. Data Science VM is inside your VNet and you can access your private link enabled workspace. You have private DNS zones on Azure so you do not need hostfile update. If you do not see error, your configuration is succeeded.
 
@@ -210,9 +234,11 @@ Services on ml.azure.com require the access right to your storage to access data
 
 Confirm data profiling works well with creating your dataset with your local CSV file. Please use [this file](https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset) for testing. If you see below screen, configuration is correct.
 
+> **WARNING** If you encounter the error when you upload dataset to storage, you do not have the access to storage. If you encounter the error to do data profiling, managed identity configuration of storage has an issue.
+
 ![data profiling](./Pic/3DataProfiling.PNG)
 
-> **WARNING** If you encounter the error when you upload dataset to storage, you do not have the access to storage. If you encounter the error to do data profiling, managed identity configuration of storage has an issue.
+> **WARNING** TBU for the case of non default storage/blob reader access requirement
 
 You can also create dataset referencing data in Azure Blob, Azure File Share, Azure Data Lake, Azure Data Lake Gen 2, and Azure SQL DB. See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-access-data). We recommend Azure Data Lake Gen 2 for enterprises with requirement for file or directory level access control. Learn [access control lists (ACLs) in Azure Data Lake Gen2](https://docs.microsoft.com/azure/storage/blobs/data-lake-storage-access-control).
 
@@ -223,22 +249,24 @@ Role Based Access Control is essential for security. In this section you will cr
 * Custom roles for IT Admin, Data Scientist, Data Scientist SUper User
 * New account and grant Data Scientist role
 
-You can find example custom roles in [here](./CustomRole/).
+You can find example custom roles in [here](./CustomRole/). Also look [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-assign-roles).
 
 * IT Admin: Can do anything.
 * Data Scientist Super User: Administrator of the workspace that can do all actions in the workspace including creating compute and adding assigning roles to users
 * Data Scientist: Can create experiments, submit runs, deploy models to test environments; Cannot create compute
 
-> **WARNING** Do not forget to update subscription ID in custome role json files.
+> **WARNING** Do not forget to update subscription ID in custom role json files.
 
 Custom Role Creation
+
 ```azurecli
 az role definition create --role-definition data_scientist_role.json
 ```
 
 Role assignment
+
 ```azurecli
-az ml workspace share -w my_workspace -g my_resource_group --role "Data Scientist" --user xxx@contoson.com
+az ml workspace share -w $ws -g $rg --role "Data Scientist" --user xxx@contoson.com
 ```
 
 > **WARNING** I use my gmail account as an example but "az ml workspace share" command does not work for federated account by Azure Active Directory B2B. Please use Azure UI portal instead of command.
@@ -266,14 +294,14 @@ You will have followings.
 Compute cluster and Compute instance require inbound access from service tag BatchNodeManagement and AzureMachineLearning. At first let's allow those two service tags in inbound access in NSG.
 
 ```azurecli
-az network nsg rule create -n batch --nsg-name ws1103nsg -g ws1103 --direction Inbound --priority 400 --source-address-prefixes BatchNodeManagement --source-port-ranges '*' --destination-port-ranges 29876-29877 --protocol Tcp --access Allow
-az network nsg rule create -n aml --nsg-name ws1103nsg -g ws1103 --direction Inbound --priority 410 --source-address-prefixes AzureMachineLearning --source-port-ranges '*' --destination-port-ranges 44224 --protocol Tcp --access Allow
+az network nsg rule create -n batch --nsg-name ws1103nsg -g $rg --direction Inbound --priority 400 --source-address-prefixes BatchNodeManagement --source-port-ranges '*' --destination-port-ranges 29876-29877 --protocol Tcp --access Allow
+az network nsg rule create -n aml --nsg-name ws1103nsg -g $rg --direction Inbound --priority 410 --source-address-prefixes AzureMachineLearning --source-port-ranges '*' --destination-port-ranges 44224 --protocol Tcp --access Allow
 ```
 
 Then, create compute cluster behind VNet.
 
 ```azurecli
-az ml computetarget create amlcompute -n cpu-cluster --min-nodes 1 --max-nodes 8 -s STANDARD_D3_V2 --vnet-name hub --vnet-resourcegroup-name ws1103 --subnet-name training --workspace-name ws1103 -g ws1103
+az ml computetarget create amlcompute -n cpu-cluster --min-nodes 1 --max-nodes 8 -s STANDARD_D3_V2 --vnet-name hub --vnet-resourcegroup-name $rg --subnet-name training --workspace-name $ws -g $rg
 ```
 
 ![ComputeClusterBehindVNet](./Pic/4ComputeClusterBehindVnet.png)
@@ -289,13 +317,13 @@ Currently creation using ARM template is only supported. Please use this [ARM te
 At first you need to disable private endpoint network policy. Details in [here](https://docs.microsoft.com/azure/private-link/disable-private-endpoint-network-policy).
 
 ```azurecli
-az network vnet subnet update -g ws1103 --vnet-name hub -n training --disable-private-endpoint-network-policies true --disable-private-link-service-network-policies true
+az network vnet subnet update -g $rg --vnet-name hub -n training --disable-private-endpoint-network-policies true --disable-private-link-service-network-policies true
 ```
 
 Then, create private IP enabled compute cluster.
 
 ```azurecli
-az deployment group create -n privateipcomputecluster -g ws1103 -f deployplcompute.json -p deployplcompute.parameters.json
+az deployment group create -n privateipcomputecluster -g $rg -f deployplcompute.json -p deployplcompute.parameters.json
 ```
 
 See the difference. This cluster has private IP only. In this case, Inbound Access from Batch Service Tag is not required.
@@ -304,26 +332,28 @@ See the difference. This cluster has private IP only. In this case, Inbound Acce
 ### Compute Instance behind VNet
 
 ```azurecli
-az ml computetarget create computeinstance -n ws1103ci1 -s "STANDARD_D3_V2" --vnet-name hub --vnet-resourcegroup-name ws1103 --subnet-name training --workspace-name ws1103 -g ws1103
+az ml computetarget create computeinstance -n ws1103ci1 -s "STANDARD_D3_V2" --vnet-name hub --vnet-resourcegroup-name $rg --subnet-name training --workspace-name $ws -g $rg
 ```
 
 Also look [this documentation](https://docs.microsoft.com/azure/machine-learning/how-to-create-manage-compute-instance).
 
 > **WARNING** From UX, subnet is limited with workspace default VNet and subnet. Please use ARM template if you want to create it in different subnet under workspace default VNet. Please note that it should belong to the workspace VNet.
 
-### Compute Instance behind VNet with on-be-half-of access
+### Compute Instance behind VNet with on-behalf-of access
 
-Basically IT admin wants to create compute instance for data scientist, but it was not supported. Now you can do that with [this template](./template/CIPoBoTemplate.json). My parameter file example is [here](./template/CIPoBOParameters.json).
+Without on-behalf-of-access, CI created by IT admin can be accessed only by IT admin. With on-behalf-of-access, CI created by IT admin can be accessed by ML engineer. [This template](./template/CIPoBoTemplate.json) is for creation. My parameter file example is [here](./template/CIPoBOParameters.json).
 
 ```azurecli
-az deployment group create -n cionbehalf -g ws1103 -f CIPoBoTemplate.json -p CIPoBoParameters.json
+az deployment group create -n cionbehalf -g $rg -f CIPoBoTemplate.json -p CIPoBoParameters.json
 ```
+
+> **WARNING** If you create VPN connection to workspace vnet, you need to update your hostfile. Please add this. **10.150.0.4 <CIname>.eastus.instances.azureml.ms**
 
 Confirm you cannot access Jupyter/RStudio on newly created compute instance. It can be accessed by data scientist. Now you have set up training resources. Architecture looks below.
 
 ![computearchitecture](./Pic/4Compute.png)
 
-> **BEFORE YOU GO** Some of you noticed that you cannot find Compute Instance and Compute Cluster in your resource group. They are managed by Microsoft but injected in your resource group and act like they exist in your VNet.
+> **BEFORE YOU GO** Some of you noticed that you cannot find Compute Instance and Compute Cluster in your resource group. They are managed by Microsoft and injected in your resource group and act like they exist in your VNet.
 
 ## 8. Provision Secure scoring env (AKS)
 
@@ -335,6 +365,10 @@ Confirm you cannot access Jupyter/RStudio on newly created compute instance. It 
 
 > **WARNING** If you use public load balancer, you need to allow inbound access to Scoring IP on NSG. Read [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#azure-kubernetes-service)
 
+> **AKS behind VNet or Private AKS** AKS behind VNet requires outbound access to AKS control plane over public IP. If you want to make that communication over private IP, please choose Private AKS cluster. 
+
+> **Load Balancer public or internal** Load balancer is for accessing the model deployed on AKS. If you want to let user to access the model over the internet, please choose public load balancer. If you want to limit its access only from your VNet, 
+
 ### AKS behind VNet with internal load balancer
 
 Look [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet).
@@ -342,18 +376,20 @@ Look [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-
 Create an AKS behind VNet with Standard Load Balancer
 
 ```azurecli
-az ml computetarget create aks -n ws1103aks --load-balancer-type PublicIp -l eastus -g ws1103 --vnet-name hub --vnet-resourcegroup-name ws1103 --subnet-name scoring --workspace-name ws1103 --cluster-purpose FastProd --service-cidr 10.0.0.0/16 --dns-service-ip 10.0.0.10 --docker-bridge-cidr 172.17.0.1/16
+az ml computetarget create aks -n ws1103aks --load-balancer-type PublicIp -l eastus -g $rg --vnet-name hub --vnet-resourcegroup-name $rg --subnet-name scoring --workspace-name $ws --cluster-purpose FastProd --service-cidr 10.0.0.0/16 --dns-service-ip 10.0.0.10 --docker-bridge-cidr 172.17.0.1/16
 ```
 
 Grant Network Contributor access to AKS Service Principle. Look up required parameters.
 
 ```azurecli
-az aks show -n ws1103aks4d629721d5b -g ws1103 --query servicePrincipalProfile.clientId -o tsv
-az group show -n ws1103 --query id -o tsv
+az aks show -n ws1103aks4d629721d5b -g $rg --query servicePrincipalProfile.clientId -o tsv
+az group show -n $rg --query id -o tsv
 ```
 
+**Confirming it is required or not**
+
 ```azurecli
-az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourceGroups/ws1103
+az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/<your subscription id>/resourceGroups/ws1103
 ```
 
 Create internal load balancer on Juypter Notebook. Currently azure cli-ml does not support update command for Compute. See this [doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#enable-private-load-balancer). Below is the python SDK example.
@@ -382,13 +418,13 @@ Create Private AKS Cluster. [doc](https://docs.microsoft.com/azure/aks/private-c
 >**WARNING** Internal load balancer does not work with an AKS cluster that uses kubenet. If you want to use an internal load balancer and a private AKS cluster at the same time, configure your private AKS cluster with Azure Container Networking Interface (CNI).
 
 ```azurecli
-az aks create -g ws1103 -n ws1103privateaks --load-balancer-sku standard --enable-private-cluster --network-plugin azure --vnet-subnet-id /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourceGroups/ws1103/providers/Microsoft.Network/virtualNetworks/hub/subnets/scoring --docker-bridge-address 172.17.0.1/16 --dns-service-ip 10.2.0.10 --service-cidr 10.2.0.0/24
+az aks create -g $rg -n ws1103privateaks --load-balancer-sku standard --enable-private-cluster --network-plugin azure --vnet-subnet-id /subscriptions/<your subscription id>/resourceGroups/ws1103/providers/Microsoft.Network/virtualNetworks/hub/subnets/scoring --docker-bridge-address 172.17.0.1/16 --dns-service-ip 10.2.0.10 --service-cidr 10.2.0.0/24
 ```
 
 Attach to workspace [doc](https://docs.microsoft.com/azure/machine-learning/how-to-create-attach-kubernetes)
 
 ```azurecli
-az ml computetarget attach aks -n privateaks -i /subscriptions/a4393d89-7e7f-4b0b-826e-72fc42c33d1f/resourcegroups/ws1103/providers/Microsoft.ContainerService/managedClusters/ws1103privateaks -g ws1103 -w ws1103
+az ml computetarget attach aks -n privateaks -i /subscriptions/<your subscription id>/resourcegroups/ws1103/providers/Microsoft.ContainerService/managedClusters/ws1103privateaks -g $rg -w $ws
 ```
 
 Create internal load balancer on Juypter Notebook. Currently azure cli-ml does not support update command for Compute. See this [doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#enable-private-load-balancer). Below is the python SDK example.
@@ -441,10 +477,10 @@ If you use customer DNS, you need additional configurations to resolve workspace
 
 You can limit outbound connectivity but you have two resources which require outbound access: Compute Cluster/Compute Instance and AKS.
 
-* Compute Cluster/Instance need outbound traffic explained in [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-training-vnet#limiting-outbound-from-vnet). 
+* Compute Cluster/Instance need outbound traffic explained in [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-training-vnet#limiting-outbound-from-vnet).
 * AKS needs outbound traffic explained in [this doc](https://docs.microsoft.com/azure/aks/limit-egress-traffic).
 
-However, for example, if you want to control outbound access to data science related OSS repositories, NSG is not flexible enough and you need to use firewall.
+However, above setting blocks all access to public OSS repositories, pip and conda packages, public datasets and that reduce ML engineer's productivity. I recommend using Firewall if you want to control outbound access with such granular level.
 
 ### Firewall
 
