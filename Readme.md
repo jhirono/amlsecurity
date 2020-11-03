@@ -106,12 +106,13 @@ az keyvault key create -n ws1103key --vault-name ws1103kv
 
 > **BEFORE YOU CONTINUE** I recommend taking note of below information for workspace encryption parameters. Note that below is my example and you will have different ones.
 
-* Resource ID: /subscriptions/<your subscription id>/resourceGroups/ws1103/providers/Microsoft.KeyVault/vaults/ws1103kv
+* Resource ID: /subscriptions/<your-subscription-id>/resourceGroups/ws1103/providers/Microsoft.KeyVault/vaults/ws1103kv
 * KID: https://ws1103kv.vault.azure.net/keys/ws1103key/5cb33f32dbbb468eb71c6ee0de1b5e84
 
 Create Private Endpoint for hub VNet
 
 * Please look [this doc](https://docs.microsoft.com/azure/key-vault/general/private-link-service).
+* I recommend doing this via portal.azure.com because it requires 10-ish CLI commands.
 
 ### Provision Private Link and Customer Managed Key Enabled Workspace
 
@@ -232,13 +233,13 @@ Architecture looks below.
 
 Services on ml.azure.com require the access right to your storage to access data. AML uses workspace managed identity for that. You need to access ml.azure.com, go to datastore and update default storage setting of "Click the Use workspace managed identity for data preview and profiling in Azure Machine Learning studio". See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-enable-studio-virtual-network).
 
+> **WARNING** Owner or User Access Administrator access is required by storage to grant workspace managed identity reader access. Once it is granted, user has nothing to do.
+
 Confirm data profiling works well with creating your dataset with your local CSV file. Please use [this file](https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset) for testing. If you see below screen, configuration is correct.
 
 > **WARNING** If you encounter the error when you upload dataset to storage, you do not have the access to storage. If you encounter the error to do data profiling, managed identity configuration of storage has an issue.
 
 ![data profiling](./Pic/3DataProfiling.PNG)
-
-> **WARNING** TBU for the case of non default storage/blob reader access requirement
 
 You can also create dataset referencing data in Azure Blob, Azure File Share, Azure Data Lake, Azure Data Lake Gen 2, and Azure SQL DB. See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-access-data). We recommend Azure Data Lake Gen 2 for enterprises with requirement for file or directory level access control. Learn [access control lists (ACLs) in Azure Data Lake Gen2](https://docs.microsoft.com/azure/storage/blobs/data-lake-storage-access-control).
 
@@ -373,6 +374,17 @@ Confirm you cannot access Jupyter/RStudio on newly created compute instance. It 
 
 Look [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet).
 
+Grant Network Contributor access to AKS Service Principle. Look up required parameters.
+
+```azurecli
+az aks show -n ws1103aks4d629721d5b -g $rg --query servicePrincipalProfile.clientId -o tsv
+az group show -n $rg --query id -o tsv
+```
+
+```azurecli
+az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/<your subscription id>/resourceGroups/ws1103
+```
+
 Create an AKS behind VNet with Standard Load Balancer
 
 ```azurecli
@@ -385,8 +397,6 @@ Grant Network Contributor access to AKS Service Principle. Look up required para
 az aks show -n ws1103aks4d629721d5b -g $rg --query servicePrincipalProfile.clientId -o tsv
 az group show -n $rg --query id -o tsv
 ```
-
-**Confirming it is required or not**
 
 ```azurecli
 az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/<your subscription id>/resourceGroups/ws1103
@@ -412,6 +422,17 @@ aks_target.wait_for_completion(show_output = True)
 ```
 
 ### Private AKS Cluster with internal load balancer
+
+Grant Network Contributor access to AKS Service Principle. Look up required parameters.
+
+```azurecli
+az aks show -n ws1103aks4d629721d5b -g $rg --query servicePrincipalProfile.clientId -o tsv
+az group show -n $rg --query id -o tsv
+```
+
+```azurecli
+az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/<your subscription id>/resourceGroups/ws1103
+```
 
 Create Private AKS Cluster. [doc](https://docs.microsoft.com/azure/aks/private-clusters)
 
@@ -453,7 +474,7 @@ Final resource group looks below.
 
 ![rg](./Pic/6finalrg.png)
 
-## 7. Test machine learning job on secure AML platform
+## 9. Test machine learning job on secure AML platform
 
 Now secure AML is ready to use. Let's open Integrated Notebook or Jupyter on Compute Instance and run the end-to-end data science job. I use [this example notebook](https://github.com/Azure/MachineLearningNotebooks/tree/master/tutorials/image-classification-mnist-data) for training and [this example notebook](https://github.com/Azure/MachineLearningNotebooks/tree/master/how-to-use-azureml/deployment/production-deploy-to-aks) for deployment to AKS.
 
@@ -480,11 +501,11 @@ You can limit outbound connectivity but you have two resources which require out
 * Compute Cluster/Instance need outbound traffic explained in [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-training-vnet#limiting-outbound-from-vnet).
 * AKS needs outbound traffic explained in [this doc](https://docs.microsoft.com/azure/aks/limit-egress-traffic).
 
-However, above setting blocks all access to public OSS repositories, pip and conda packages, public datasets and that reduce ML engineer's productivity. I recommend using Firewall if you want to control outbound access with such granular level.
+However, above setting blocks all access to public OSS repositories, pip and conda packages, public datasets which are essential for ML engineer. I recommend using Firewall if you want to control outbound access with such granular level. If you want to allow that access using NSG, you need to open 80/443 outbound which is not realistic.
 
 ### Firewall
 
-See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-access-azureml-behind-firewall).
+See [this doc](https://docs.microsoft.com/azure/machine-learning/how-to-access-azureml-behind-firewall). We are updating this doc to use Service tags in Network rule and FQDNs in application rules.
 
 ### Managed Identity
 
