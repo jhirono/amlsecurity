@@ -391,17 +391,6 @@ Create an AKS behind VNet with Standard Load Balancer
 az ml computetarget create aks -n ws1103aks --load-balancer-type PublicIp -l eastus -g $rg --vnet-name hub --vnet-resourcegroup-name $rg --subnet-name scoring --workspace-name $ws --cluster-purpose FastProd --service-cidr 10.0.0.0/16 --dns-service-ip 10.0.0.10 --docker-bridge-cidr 172.17.0.1/16
 ```
 
-Grant Network Contributor access to AKS Service Principle. Look up required parameters.
-
-```azurecli
-az aks show -n ws1103aks4d629721d5b -g $rg --query servicePrincipalProfile.clientId -o tsv
-az group show -n $rg --query id -o tsv
-```
-
-```azurecli
-az role assignment create --assignee cc818dbe-b892-440e-b9e4-f3555dd5a67c --role 'Network Contributor' --scope /subscriptions/<your subscription id>/resourceGroups/ws1103
-```
-
 Create internal load balancer on Juypter Notebook. Currently azure cli-ml does not support update command for Compute. See this [doc](https://docs.microsoft.com/azure/machine-learning/how-to-secure-inferencing-vnet#enable-private-load-balancer). Below is the python SDK example.
 
 ```python
