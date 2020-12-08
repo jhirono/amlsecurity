@@ -76,9 +76,9 @@ Create VNet and Subnets
 
 ```azurecli
 az network vnet create -g $rg -n hub --address-prefix 10.150.0.0/16 --subnet-name training --subnet-prefix 10.150.0.0/24
-az network vnet subnet update -g $rg --VNet-name hub -n training --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
-az network vnet subnet create -g $rg --VNet-name hub -n scoring --address-prefixes 10.150.1.0/24
-az network vnet subnet update -g $rg --VNet-name hub -n scoring --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
+az network vnet subnet update -g $rg --vnet-name hub -n training --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
+az network vnet subnet create -g $rg --vnet-name hub -n scoring --address-prefixes 10.150.1.0/24
+az network vnet subnet update -g $rg --vnet-name hub -n scoring --service-endpoints Microsoft.Storage Microsoft.KeyVault Microsoft.ContainerRegistry
 ```
 
 Create NSG and attach to subnets. NSG rule will be updated later.
