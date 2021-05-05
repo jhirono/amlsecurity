@@ -197,13 +197,7 @@ You also need to update your hostfile to resolve workspace FQDNs with private IP
 ```txt
 ## For workspace FQDNs
 10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.api.azureml.ms
-10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.studio.workspace.eastus.api.azureml.ms
 10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.cert.api.azureml.ms
-10.150.0.4 cert-bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.api.azureml.ms
-10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.studioservice.azureml.com
-10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.experiments.azureml.net
-10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.modelmanagement.azureml.net
-10.150.0.4 bf4ab0bd-2c9f-4480-abaf-f799f0832c80.workspace.eastus.aether.ms
 10.150.0.5 ml-ws1103-eastus-bf4ab0bd-2c9f-4480-abaf-f799f0832c80.notebooks.azure.net
 
 ## For Associated Resources (Storage, KeyVault, ACR)
