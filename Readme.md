@@ -342,7 +342,7 @@ Without on-behalf-of-access, CI created by IT admin can be accessed only by IT a
 az deployment group create -n cionbehalf -g $rg -f CIPoBoTemplate.json -p CIPoBoParameters.json
 ```
 
-> **WARNING** If you create VPN connection to workspace vnet, you need to update your hostfile. Please add this. **10.150.0.4 <CIname>.eastus.instances.azureml.ms**
+> **WARNING** If you create VPN connection to workspace vnet, you need to update your hostfile. Please add this. **10.150.0.4 ComputeInstanceName.eastus.instances.azureml.ms**
 
 Confirm you cannot access Jupyter/RStudio on newly created compute instance. It can be accessed by data scientist. Now you have set up training resources. Architecture looks below.
 
