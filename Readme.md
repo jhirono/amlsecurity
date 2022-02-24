@@ -537,4 +537,4 @@ Private link workspace forces user to access workspace over private IP. Some cus
 |ADLS Gen2 as Default Storage|Not Supported but on roadmap|
 |ADLS Gen2 as additional Storage|Supported|
 |ADLS Gen2 with Service Principle|Supported|
-|ALDS Gen2 with user credential pass through|Not Supported but on Roadmap|
+|ALDS Gen2 with user credential pass through|Supported|
